@@ -1,0 +1,65 @@
+<h2>Should this item be returned?</h2>
+
+<p id="response"></p>
+<p id="name-label">Name of object to return: <input class="input" id="name-input" type="text" placeholder="Name of object"></p>
+<p id="picture-label">Upload pictures of object: <input class="input" id="picture-input" type="file" accept="image/*" multiple></p>
+<p id="description-label">Description of object to return: <input class="input" id="description-input" type="text" placeholder="Description of object"></p>
+<p id="reason-label">Reason for return: <input class="input" id="reason-input" type="text" placeholder="Reason for return"></p>
+<p id="outcome-label">Desired outcome: <input class="input" id="outcome-input" type="text" placeholder="Desired outcome"></p>
+
+<button id="create">Ask Gemini</button>
+
+<script>
+    document.getElementById('create').onclick = async () => {
+        const name = document.getElementById('name-input').value;
+        const description = document.getElementById('description-input').value;
+        const reason = document.getElementById('reason-input').value;
+        const outcome = document.getElementById('outcome-input').value;
+        const picture = document.getElementById('picture-input').files;
+
+        if (!name || !description) {
+            document.getElementById('response').textContent = "Please fill out both fields.";
+            return;
+        }
+
+        const prompt = `I have an item that I want to return. Would you return the item or not? Format the output as a formal report. Do not use any markdown formatting. Format the output to directly be pasted into an HTML website. If the product was shipped with fault, it is returnable. If the item is not broken or damage, it is returnable. In the report: Analyze the name, description, reason, desired outcome, and pictures. Take pictures into account if there are any and use the information in the pictures as priority. Then provide a brief (Maximum 100 words) summary of the report and your recommendation.
+        Name: ${name}, Description: ${description}, Pictures: ${Array.from(picture).map(file => file.name).join(', ')}`;
+
+        try {
+    const prompt = `I have an item that I want to return. Would you return the item or not? Format the output as a formal report.
+    Name: ${name}, Description: ${description}, Reason: ${reason}, Desired outcome: ${outcome}, Pictures: ${Array.from(picture).map(file => file.name).join(', ')}`;
+
+    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=<API-KEY>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+        })
+    });
+
+    data = await response.json();
+    data = data.candidates[0].content.parts[0].text;
+    data = data.replace(/\*\*/g, '<br>');
+    data = data.replace(/\*/g, '');
+    document.getElementById('response').innerHTML = data;
+	console.log('Response from Gemini:', data);
+
+    document.getElementById('name-input').style.display = 'none';
+    document.getElementById('description-input').style.display = 'none';
+    document.getElementById('reason-input').style.display = 'none';
+    document.getElementById('outcome-input').style.display = 'none';
+    document.getElementById('create').style.display = 'none';
+    document.getElementById('name-label').style.display = 'none';
+    document.getElementById('description-label').style.display = 'none';
+    document.getElementById('reason-label').style.display = 'none';
+    document.getElementById('outcome-label').style.display = 'none';
+
+} catch (error) {
+    console.error('Error:', error);
+    //document.getElementById('response').textContent = data;
+}
+
+    };
+</script>
